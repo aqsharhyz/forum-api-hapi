@@ -206,7 +206,7 @@ describe('/threads endpoint', () => {
         username: 'test',
         comments: [
           {
-            id: expect.any(String), // Expect comment ID to be a string
+            id: expect.any(String),
             content: commentPayload.content,
             username: 'test',
             date: expect.any(String),

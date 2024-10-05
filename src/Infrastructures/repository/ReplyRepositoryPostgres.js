@@ -87,20 +87,7 @@ class ReplyRepositoryPostgres extends ReplyRepository {
 
     const result = await this._pool.query(query);
 
-    const mappedResult = result.rows.map(
-      ({
-        id, content, username, date, is_delete, comment_id,
-      }) => ({
-        id,
-        content,
-        username,
-        date,
-        is_delete,
-        commentId: comment_id,
-      }),
-    );
-
-    return mappedResult;
+    return result.rows;
   }
 
   async deleteReplyById(replyId) {

@@ -65,29 +65,34 @@ describe('a GetThreadByIdUseCase', () => {
         content: 'this is reply content',
         date: '2022-12-30T07:26:17.000Z',
         username: 'fulan',
-        commentId: 'comment-123',
+        comment_id: 'comment-123',
         is_delete: false,
       },
     ];
 
-    const expectedCommentsAndReplies = comments.map((comment) => ({
-      id: comment.id,
-      username: comment.username,
-      date: comment.date,
-      content: comment.is_delete
-        ? '**komentar telah dihapus**'
-        : comment.content,
-      replies: replies
-        .filter((reply) => reply.commentId === comment.id)
-        .map((reply) => ({
-          id: reply.id,
-          content: reply.is_delete
-            ? '**balasan telah dihapus**'
-            : reply.content,
-          date: reply.date,
-          username: reply.username,
-        })),
-    }));
+    const expectedCommentsAndReplies = [
+      {
+        id: 'comment-123',
+        username: 'fulan',
+        date: '2022-12-30T07:26:17.000Z',
+        content: 'this is comment content',
+        replies: [
+          {
+            id: 'reply-123',
+            content: 'this is reply content',
+            date: '2022-12-30T07:26:17.000Z',
+            username: 'fulan',
+          },
+        ],
+      },
+      {
+        id: 'comment-124',
+        username: 'fulan',
+        date: '2022-12-30T07:26:17.000Z',
+        content: '**komentar telah dihapus**',
+        replies: [],
+      },
+    ];
 
     const getThreadByIdUseCase = new GetThreadByIdUseCase({
       threadRepository: {},
@@ -127,7 +132,7 @@ describe('a GetThreadByIdUseCase', () => {
     const replies = [
       {
         id: 'reply-1',
-        commentId: 'comment-1',
+        comment_id: 'comment-1',
         content: 'First reply',
         is_delete: false,
         date: '2023-10-01T12:01:00Z',
@@ -135,7 +140,7 @@ describe('a GetThreadByIdUseCase', () => {
       },
       {
         id: 'reply-2',
-        commentId: 'comment-1',
+        comment_id: 'comment-1',
         content: 'Second reply',
         is_delete: true,
         date: '2023-10-01T12:02:00Z',
@@ -143,7 +148,7 @@ describe('a GetThreadByIdUseCase', () => {
       },
       {
         id: 'reply-3',
-        commentId: 'comment-2',
+        comment_id: 'comment-2',
         content: 'Third reply',
         is_delete: false,
         date: '2023-10-01T12:06:00Z',
@@ -216,7 +221,19 @@ describe('a GetThreadByIdUseCase', () => {
       username: 'fulan',
     };
 
-    const availableComments = [
+    const mockThreadRepository = new ThreadRepository();
+    const mockCommentRepository = new CommentRepository();
+    const mockReplyRepository = new ReplyRepository();
+
+    mockThreadRepository.isThreadExist = jest.fn(() => Promise.resolve());
+    mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve({
+      id: 'thread-123',
+      title: 'test thread',
+      body: 'this is body of thread',
+      date: '2022-12-30T07:26:17.000Z',
+      username: 'fulan',
+    }));
+    mockCommentRepository.getCommentsByThreadId = jest.fn(() => Promise.resolve([
       {
         id: 'comment-123',
         username: 'fulan',
@@ -231,27 +248,17 @@ describe('a GetThreadByIdUseCase', () => {
         content: 'this is deleted comment content',
         is_delete: true,
       },
-    ];
-
-    const availableReplies = [
+    ]));
+    mockReplyRepository.getRepliesByThreadId = jest.fn(() => Promise.resolve([
       {
         id: 'reply-123',
         content: 'this is reply content',
         date: '2022-12-30T07:26:17.000Z',
         username: 'fulan',
-        commentId: 'comment-123',
+        comment_id: 'comment-123',
         is_delete: false,
       },
-    ];
-
-    const mockThreadRepository = new ThreadRepository();
-    const mockCommentRepository = new CommentRepository();
-    const mockReplyRepository = new ReplyRepository();
-
-    mockThreadRepository.isThreadExist = jest.fn(() => Promise.resolve());
-    mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve(expectedThread));
-    mockCommentRepository.getCommentsByThreadId = jest.fn(() => Promise.resolve(availableComments));
-    mockReplyRepository.getRepliesByThreadId = jest.fn(() => Promise.resolve(availableReplies));
+    ]));
 
     const getThreadByIdUseCase = new GetThreadByIdUseCase({
       threadRepository: mockThreadRepository,
@@ -289,6 +296,9 @@ describe('a GetThreadByIdUseCase', () => {
         },
       ],
     });
+    expect(mockThreadRepository.isThreadExist).toBeCalledWith(
+      useCasePayload.threadId,
+    );
     expect(mockThreadRepository.getThreadById).toBeCalledWith(
       useCasePayload.threadId,
     );

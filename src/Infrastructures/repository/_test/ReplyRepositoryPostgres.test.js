@@ -215,13 +215,14 @@ describe('a ReplyRepositoryPostgres', () => {
       );
 
       expect(replies).toHaveLength(2);
-      replies.forEach((reply) => {
-        expect(reply).toHaveProperty('id');
-        expect(reply).toHaveProperty('content');
-        expect(reply).toHaveProperty('username', 'testuser');
-        expect(reply).toHaveProperty('is_delete');
-        expect(reply).toHaveProperty('date');
-      });
+      expect(replies).toEqual([
+        {
+          id: firstReply.id, content: firstReply.content, is_delete: false, username: 'testuser', date: expect.any(Date),
+        },
+        {
+          id: secondReply.id, content: secondReply.content, is_delete: secondReply.is_delete, username: 'testuser', date: expect.any(Date),
+        },
+      ]);
     });
   });
 
@@ -253,14 +254,14 @@ describe('a ReplyRepositoryPostgres', () => {
       );
 
       expect(replies).toHaveLength(2);
-      replies.forEach((reply) => {
-        expect(reply).toHaveProperty('id');
-        expect(reply).toHaveProperty('content');
-        expect(reply).toHaveProperty('username', 'testuser');
-        expect(reply).toHaveProperty('is_delete');
-        expect(reply).toHaveProperty('commentId');
-        expect(reply).toHaveProperty('date');
-      });
+      expect(replies).toEqual([
+        {
+          id: firstReply.id, content: firstReply.content, is_delete: false, username: 'testuser', date: expect.any(Date), comment_id: firstReply.commentId,
+        },
+        {
+          id: secondReply.id, content: secondReply.content, is_delete: secondReply.is_delete, username: 'testuser', date: expect.any(Date), comment_id: secondReply.commentId,
+        },
+      ]);
     });
   });
 
