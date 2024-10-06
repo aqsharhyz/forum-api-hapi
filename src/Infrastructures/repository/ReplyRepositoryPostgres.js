@@ -56,8 +56,6 @@ class ReplyRepositoryPostgres extends ReplyRepository {
     if (!result.rowCount) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
-
-    return true;
   }
 
   async getRepliesByCommentId(commentId) {

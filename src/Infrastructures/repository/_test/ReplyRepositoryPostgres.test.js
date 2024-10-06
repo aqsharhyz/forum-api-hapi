@@ -167,7 +167,7 @@ describe('a ReplyRepositoryPostgres', () => {
       ).rejects.toThrowError(AuthorizationError);
     });
 
-    it('should return true when reply owner is valid', async () => {
+    it('should not throw Authorizationerror when reply owner is valid', async () => {
       await RepliesTableTestHelper.addReply({
         id: 'reply-123',
         content: 'test reply',
@@ -178,12 +178,9 @@ describe('a ReplyRepositoryPostgres', () => {
 
       const replyRepositoryPostgres = new ReplyRepositoryPostgres(pool, {});
 
-      const isReplyOwner = await replyRepositoryPostgres.verifyReplyOwner(
-        'reply-123',
-        'user-123',
-      );
-
-      expect(isReplyOwner).toBeTruthy();
+      await expect(
+        replyRepositoryPostgres.verifyReplyOwner('reply-123', 'user-123'),
+      ).resolves.not.toThrowError(AuthorizationError);
     });
   });
 

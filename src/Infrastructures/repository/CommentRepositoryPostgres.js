@@ -53,8 +53,6 @@ class CommentRepositoryPostgres extends CommentRepository {
     if (!result.rowCount) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
-
-    return true;
   }
 
   async getCommentsByThreadId(threadId) {

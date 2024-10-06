@@ -155,7 +155,7 @@ describe('a CommentRepositoryPostgres', () => {
   });
 
   describe('verifyCommentOwner function', () => {
-    it('should return true when comment owner is the same as the payload', async () => {
+    it('should not Authorizationerror when comment owner is the same as the payload', async () => {
       const newComment = new AddComment({
         content: 'test comment',
         owner: 'user-123',
@@ -170,12 +170,9 @@ describe('a CommentRepositoryPostgres', () => {
 
       await commentRepositoryPostgres.addComment(newComment);
 
-      const isCommentOwner = await commentRepositoryPostgres.verifyCommentOwner(
-        'comment-123',
-        'user-123',
-      );
-
-      expect(isCommentOwner).toBeTruthy();
+      await expect(
+        commentRepositoryPostgres.verifyCommentOwner('comment-123', 'user-123'),
+      ).resolves.not.toThrowError(AuthorizationError);
     });
 
     it('should return Authorizationerror when comment owner is not the same as the payload', async () => {
@@ -222,13 +219,29 @@ describe('a CommentRepositoryPostgres', () => {
       );
 
       expect(comments).toHaveLength(2);
-      comments.forEach((comment) => {
-        expect(comment).toHaveProperty('id');
-        expect(comment).toHaveProperty('content');
-        expect(comment).toHaveProperty('date');
-        expect(comment).toHaveProperty('username', 'testuser');
-        expect(comment).toHaveProperty('is_delete');
-      });
+      // comments.forEach((comment) => {
+      //   expect(comment).toHaveProperty('id');
+      //   expect(comment).toHaveProperty('content');
+      //   expect(comment).toHaveProperty('date');
+      //   expect(comment).toHaveProperty('username', 'testuser');
+      //   expect(comment).toHaveProperty('is_delete');
+      // });
+      expect(comments).toStrictEqual([
+        {
+          id: firstComment.id,
+          content: firstComment.content,
+          date: expect.any(Date),
+          username: 'testuser',
+          is_delete: firstComment.is_delete,
+        },
+        {
+          id: secondComment.id,
+          content: secondComment.content,
+          date: expect.any(Date),
+          username: 'testuser',
+          is_delete: secondComment.is_delete,
+        },
+      ]);
     });
 
     it('should return empty array when no comments exist for the thread', async () => {
