@@ -1,24 +1,24 @@
-const ToggleLikeCommentUseCase = require("../ToggleLikeCommentUseCase");
-const CommentRepository = require("../../../Domains/comments/CommentRepository");
-const LikeCommentRepository = require("../../../Domains/like_comment/LikeCommentRepository");
+const ToggleLikeCommentUseCase = require('../ToggleLikeCommentUseCase');
+const CommentRepository = require('../../../Domains/comments/CommentRepository');
+const LikeCommentRepository = require('../../../Domains/like_comment/LikeCommentRepository');
 
-describe("ToggleLikeCommentUseCase", () => {
-  it("should throw error if use case payload not contain needed property", async () => {
+describe('ToggleLikeCommentUseCase', () => {
+  it('should throw error if use case payload not contain needed property', async () => {
     // Arrange
     const useCasePayload = {
-      owner: "user-123",
+      owner: 'user-123',
     };
     const toggleLikeCommentUseCase = new ToggleLikeCommentUseCase({});
 
     // Action & Assert
     await expect(
-      toggleLikeCommentUseCase.execute(useCasePayload)
+      toggleLikeCommentUseCase.execute(useCasePayload),
     ).rejects.toThrowError(
-      "TOGGLE_LIKE_COMMENT_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY"
+      'TOGGLE_LIKE_COMMENT_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY',
     );
   });
 
-  it("should throw error if use case payload not meet data type specification", async () => {
+  it('should throw error if use case payload not meet data type specification', async () => {
     // Arrange
     const useCasePayload = {
       commentId: 123,
@@ -29,33 +29,27 @@ describe("ToggleLikeCommentUseCase", () => {
 
     // Action & Assert
     await expect(
-      toggleLikeCommentUseCase.execute(useCasePayload)
+      toggleLikeCommentUseCase.execute(useCasePayload),
     ).rejects.toThrowError(
-      "TOGGLE_LIKE_COMMENT_USE_CASE.NOT_MEET_DATA_TYPE_SPECIFICATION"
+      'TOGGLE_LIKE_COMMENT_USE_CASE.NOT_MEET_DATA_TYPE_SPECIFICATION',
     );
   });
 
-  describe("should orchestrating the toggle like comment action correctly", () => {
-    it("should add like to comment", async () => {
+  describe('should orchestrating the toggle like comment action correctly', () => {
+    it('should add like to comment', async () => {
       // Arrange
       const useCasePayload = {
-        commentId: "comment-123",
-        threadId: "thread-123",
-        owner: "user-123",
+        commentId: 'comment-123',
+        threadId: 'thread-123',
+        owner: 'user-123',
       };
 
       const mockCommentRepository = new CommentRepository();
       const mockLikeCommentRepository = new LikeCommentRepository();
-      mockCommentRepository.isCommentExistInThread = jest.fn(() =>
-        Promise.resolve()
-      );
-      mockLikeCommentRepository.checkLikeComment = jest.fn(() =>
-        Promise.resolve(false)
-      );
+      mockCommentRepository.isCommentExistInThread = jest.fn(() => Promise.resolve());
+      mockLikeCommentRepository.checkLikeComment = jest.fn(() => Promise.resolve(false));
       mockLikeCommentRepository.likeComment = jest.fn(() => Promise.resolve());
-      mockLikeCommentRepository.unlikeComment = jest.fn(() =>
-        Promise.resolve()
-      );
+      mockLikeCommentRepository.unlikeComment = jest.fn(() => Promise.resolve());
 
       const toggleLikeCommentUseCase = new ToggleLikeCommentUseCase({
         commentRepository: mockCommentRepository,
@@ -68,38 +62,32 @@ describe("ToggleLikeCommentUseCase", () => {
       // Assert
       expect(mockCommentRepository.isCommentExistInThread).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.threadId
+        useCasePayload.threadId,
       );
       expect(mockLikeCommentRepository.checkLikeComment).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.owner
+        useCasePayload.owner,
       );
       expect(mockLikeCommentRepository.likeComment).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.owner
+        useCasePayload.owner,
       );
       expect(mockLikeCommentRepository.unlikeComment).not.toHaveBeenCalled();
     });
 
-    it("should remove like from comment", async () => {
+    it('should remove like from comment', async () => {
       // Arrange
       const useCasePayload = {
-        commentId: "comment-123",
-        threadId: "thread-123",
-        owner: "user-123",
+        commentId: 'comment-123',
+        threadId: 'thread-123',
+        owner: 'user-123',
       };
 
       const mockCommentRepository = new CommentRepository();
       const mockLikeCommentRepository = new LikeCommentRepository();
-      mockCommentRepository.isCommentExistInThread = jest.fn(() =>
-        Promise.resolve()
-      );
-      mockLikeCommentRepository.checkLikeComment = jest.fn(() =>
-        Promise.resolve(true)
-      );
-      mockLikeCommentRepository.unlikeComment = jest.fn(() =>
-        Promise.resolve()
-      );
+      mockCommentRepository.isCommentExistInThread = jest.fn(() => Promise.resolve());
+      mockLikeCommentRepository.checkLikeComment = jest.fn(() => Promise.resolve(true));
+      mockLikeCommentRepository.unlikeComment = jest.fn(() => Promise.resolve());
       mockLikeCommentRepository.likeComment = jest.fn(() => Promise.resolve());
 
       const toggleLikeCommentUseCase = new ToggleLikeCommentUseCase({
@@ -113,15 +101,15 @@ describe("ToggleLikeCommentUseCase", () => {
       // Assert
       expect(mockCommentRepository.isCommentExistInThread).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.threadId
+        useCasePayload.threadId,
       );
       expect(mockLikeCommentRepository.checkLikeComment).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.owner
+        useCasePayload.owner,
       );
       expect(mockLikeCommentRepository.unlikeComment).toHaveBeenCalledWith(
         useCasePayload.commentId,
-        useCasePayload.owner
+        useCasePayload.owner,
       );
       expect(mockLikeCommentRepository.likeComment).not.toHaveBeenCalled();
     });
