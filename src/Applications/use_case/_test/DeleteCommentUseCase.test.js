@@ -1,8 +1,8 @@
-const CommentRepository = require('../../../Domains/comments/CommentRepository');
-const DeleteCommentUseCase = require('../DeleteCommentUseCase');
+const CommentRepository = require("../../../Domains/comments/CommentRepository");
+const DeleteCommentUseCase = require("../DeleteCommentUseCase");
 
-describe('a DeleteCommentUseCase', () => {
-  it('should throw error if the use case payload not contain needed property', async () => {
+describe("a DeleteCommentUseCase", () => {
+  it("should throw error if the use case payload not contain needed property", async () => {
     // Arrange
     const useCasePayload = {};
 
@@ -10,13 +10,13 @@ describe('a DeleteCommentUseCase', () => {
 
     // Action & Assert
     await expect(
-      deleteCommentUseCase.execute(useCasePayload),
+      deleteCommentUseCase.execute(useCasePayload)
     ).rejects.toThrowError(
-      'DELETE_COMMENT_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY',
+      "DELETE_COMMENT_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY"
     );
   });
 
-  it('should throw error if the use case payload not meet data type specification', async () => {
+  it("should throw error if the use case payload not meet data type specification", async () => {
     // Arrange
     const useCasePayload = {
       threadId: 123,
@@ -28,30 +28,30 @@ describe('a DeleteCommentUseCase', () => {
 
     // Action & Assert
     await expect(
-      deleteCommentUseCase.execute(useCasePayload),
+      deleteCommentUseCase.execute(useCasePayload)
     ).rejects.toThrowError(
-      'DELETE_COMMENT_USE_CASE.NOT_MEET_DATA_TYPE_SPECIFICATION',
+      "DELETE_COMMENT_USE_CASE.NOT_MEET_DATA_TYPE_SPECIFICATION"
     );
   });
 
-  it('should orchestrating the delete comment action correctly', async () => {
+  it("should orchestrating the delete comment action correctly", async () => {
     // Arrange
     const useCasePayload = {
-      threadId: 'thread-123',
-      commentId: 'comment-123',
-      owner: 'user-123',
+      threadId: "thread-123",
+      commentId: "comment-123",
+      owner: "user-123",
     };
 
     const mockCommentRepository = new CommentRepository();
-    const mockThreadRepository = new CommentRepository();
 
-    mockCommentRepository.isCommentExistInThread = jest.fn(() => Promise.resolve());
+    mockCommentRepository.isCommentExistInThread = jest.fn(() =>
+      Promise.resolve()
+    );
     mockCommentRepository.verifyCommentOwner = jest.fn(() => Promise.resolve());
     mockCommentRepository.deleteCommentById = jest.fn(() => Promise.resolve());
 
     const deleteCommentUseCase = new DeleteCommentUseCase({
       commentRepository: mockCommentRepository,
-      threadRepository: mockThreadRepository,
     });
 
     // Action
@@ -60,11 +60,14 @@ describe('a DeleteCommentUseCase', () => {
     // Assert
     expect(mockCommentRepository.isCommentExistInThread).toBeCalledWith(
       useCasePayload.commentId,
-      useCasePayload.threadId,
+      useCasePayload.threadId
     );
-    expect(mockCommentRepository.verifyCommentOwner).toBeCalledWith(useCasePayload.commentId, useCasePayload.owner);
-    expect(mockCommentRepository.deleteCommentById).toBeCalledWith(
+    expect(mockCommentRepository.verifyCommentOwner).toBeCalledWith(
       useCasePayload.commentId,
+      useCasePayload.owner
+    );
+    expect(mockCommentRepository.deleteCommentById).toBeCalledWith(
+      useCasePayload.commentId
     );
   });
 });
