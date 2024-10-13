@@ -12,6 +12,7 @@ class GetThreadByIdUseCase {
   }
 
   async execute(useCasePayload) {
+    this._validatePayload(useCasePayload);
     const { threadId } = useCasePayload;
     await this._threadRepository.isThreadExist(threadId);
     const thread = await this._threadRepository.getThreadById(threadId);
