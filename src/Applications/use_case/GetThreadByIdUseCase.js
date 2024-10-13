@@ -1,8 +1,14 @@
 class GetThreadByIdUseCase {
-  constructor({ threadRepository, commentRepository, replyRepository }) {
+  constructor({
+    threadRepository,
+    commentRepository,
+    replyRepository,
+    likeCommentRepository,
+  }) {
     this._threadRepository = threadRepository;
     this._commentRepository = commentRepository;
     this._replyRepository = replyRepository;
+    this._likeCommentRepository = likeCommentRepository;
   }
 
   async execute(useCasePayload) {
@@ -13,9 +19,39 @@ class GetThreadByIdUseCase {
     const comments = await this._commentRepository.getCommentsByThreadId(
       threadId,
     );
-    const replies = await this._replyRepository.getRepliesByThreadId(threadId);
+    const commentsWithLikesCount = await Promise.all(
+      comments.map(async (comment) => {
+        const likeCount = await this._likeCommentRepository.getLikeCountByCommentId(comment.id);
+        return {
+          id: comment.id,
+          username: comment.username,
+          date: comment.date,
+          likeCount,
+          content: comment.is_delete
+            ? '**komentar telah dihapus**'
+            : comment.content,
+        };
+      }),
+    );
 
-    const commentsWithReplies = this._mapCommentsWithReplies(comments, replies);
+    const commentsWithReplies = await Promise.all(
+      commentsWithLikesCount.map(async (comment) => {
+        const replies = await this._replyRepository.getRepliesByCommentId(
+          comment.id,
+        );
+        return {
+          ...comment,
+          replies: replies.map((reply) => ({
+            id: reply.id,
+            content: reply.is_delete
+              ? '**balasan telah dihapus**'
+              : reply.content,
+            date: reply.date,
+            username: reply.username,
+          })),
+        };
+      }),
+    );
 
     const threadWithComments = {
       ...thread,
@@ -35,27 +71,6 @@ class GetThreadByIdUseCase {
         'GET_THREAD_BY_ID_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION',
       );
     }
-  }
-
-  _mapCommentsWithReplies(comments, replies) {
-    return comments.map((comment) => ({
-      id: comment.id,
-      username: comment.username,
-      date: comment.date,
-      content: comment.is_delete
-        ? '**komentar telah dihapus**'
-        : comment.content,
-      replies: [...replies]
-        .filter((reply) => reply.comment_id === comment.id)
-        .map((reply) => ({
-          id: reply.id,
-          content: reply.is_delete
-            ? '**balasan telah dihapus**'
-            : reply.content,
-          date: reply.date,
-          username: reply.username,
-        })),
-    }));
   }
 }
 

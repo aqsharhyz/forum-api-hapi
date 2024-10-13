@@ -210,6 +210,7 @@ describe('/threads endpoint', () => {
             content: commentPayload.content,
             username: 'test',
             date: expect.any(String),
+            likeCount: 0,
             replies: [],
           },
         ],
@@ -280,6 +281,7 @@ describe('/threads endpoint', () => {
             content: commentPayload.content,
             username: 'test',
             date: expect.any(String),
+            likeCount: 0,
             replies: [
               {
                 id: expect.any(String),
@@ -288,6 +290,73 @@ describe('/threads endpoint', () => {
                 username: 'test',
               },
             ],
+          },
+        ],
+      });
+    });
+
+    it('should response 200 and return thread with comments, replies, and comment likes', async () => {
+      // Arrange
+      const threadPayload = {
+        title: 'test thread',
+        body: 'this is body of thread',
+      };
+      const server = await createServer(container);
+      const threadResponse = await server.inject({
+        method: 'POST',
+        url: '/threads',
+        payload: threadPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const thread = JSON.parse(threadResponse.payload);
+
+      const commentPayload = {
+        content: 'test comment',
+      };
+      const commentResponse = await server.inject({
+        method: 'POST',
+        url: `/threads/${thread.data.addedThread.id}/comments`,
+        payload: commentPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const comment = JSON.parse(commentResponse.payload);
+
+      await server.inject({
+        method: 'PUT',
+        url: `/threads/${thread.data.addedThread.id}/comments/${comment.data.addedComment.id}/likes`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      // Action
+      const response = await server.inject({
+        method: 'GET',
+        url: `/threads/${thread.data.addedThread.id}`,
+      });
+
+      // Assert
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toEqual(200);
+      expect(responseJson.status).toEqual('success');
+      expect(responseJson.data.thread).toEqual({
+        id: thread.data.addedThread.id,
+        title: threadPayload.title,
+        body: threadPayload.body,
+        date: expect.any(String),
+        username: 'test',
+        comments: [
+          {
+            id: comment.data.addedComment.id,
+            content: commentPayload.content,
+            username: 'test',
+            date: expect.any(String),
+            likeCount: 1,
+            replies: [],
           },
         ],
       });

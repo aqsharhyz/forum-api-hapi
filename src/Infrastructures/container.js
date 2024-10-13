@@ -15,6 +15,7 @@ const UserRepositoryPostgres = require('./repository/UserRepositoryPostgres');
 const ThreadRepositoryPostgres = require('./repository/ThreadRepositoryPostgres');
 const CommentRepositoryPostgres = require('./repository/CommentRepositoryPostgres');
 const ReplyRepositoryPostgres = require('./repository/ReplyRepositoryPostgres');
+const LikeCommentRepositoryPostgres = require('./repository/LikeCommentRepositoryPostgres');
 const BcryptPasswordHash = require('./security/BcryptPasswordHash');
 
 // use case
@@ -32,6 +33,7 @@ const AddCommentUseCase = require('../Applications/use_case/AddCommentUseCase');
 const DeleteCommentUseCase = require('../Applications/use_case/DeleteCommentUseCase');
 const AddReplyUseCase = require('../Applications/use_case/AddReplyUseCase');
 const DeleteReplyUseCase = require('../Applications/use_case/DeleteReplyUseCase');
+const ToggleLikeCommentUseCase = require('../Applications/use_case/ToggleLikeCommentUseCase');
 
 // creating container
 const container = createContainer();
@@ -116,6 +118,20 @@ container.register([
   {
     key: ReplyRepositoryPostgres.name,
     Class: ReplyRepositoryPostgres,
+    parameter: {
+      dependencies: [
+        {
+          concrete: pool,
+        },
+        {
+          concrete: nanoid,
+        },
+      ],
+    },
+  },
+  {
+    key: LikeCommentRepositoryPostgres.name,
+    Class: LikeCommentRepositoryPostgres,
     parameter: {
       dependencies: [
         {
@@ -234,6 +250,10 @@ container.register([
           name: 'replyRepository',
           internal: ReplyRepositoryPostgres.name,
         },
+        {
+          name: 'likeCommentRepository',
+          internal: LikeCommentRepositoryPostgres.name,
+        },
       ],
     },
   },
@@ -297,6 +317,23 @@ container.register([
         {
           name: 'replyRepository',
           internal: ReplyRepositoryPostgres.name,
+        },
+      ],
+    },
+  },
+  {
+    key: ToggleLikeCommentUseCase.name,
+    Class: ToggleLikeCommentUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'likeCommentRepository',
+          internal: LikeCommentRepositoryPostgres.name,
+        },
+        {
+          name: 'commentRepository',
+          internal: CommentRepositoryPostgres.name,
         },
       ],
     },

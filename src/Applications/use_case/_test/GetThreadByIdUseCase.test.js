@@ -2,6 +2,7 @@ const GetThreadByIdUseCase = require('../GetThreadByIdUseCase');
 const ThreadRepository = require('../../../Domains/threads/ThreadRepository');
 const CommentRepository = require('../../../Domains/comments/CommentRepository');
 const ReplyRepository = require('../../../Domains/replies/ReplyRepository');
+const LikeCommentRepository = require('../../../Domains/like_comment/LikeCommentRepository');
 
 describe('a GetThreadByIdUseCase', () => {
   it('should throw error if payload not contain needed property', async () => {
@@ -39,173 +40,106 @@ describe('a GetThreadByIdUseCase', () => {
       'GET_THREAD_BY_ID_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION',
     );
   });
+  //   // Arrange
+  //   const comments = [
+  //     {
+  //       id: "comment-1",
+  //       username: "user1",
+  //       date: "2023-10-01T12:00:00Z",
+  //       content: "First comment",
+  //       is_delete: false,
+  //       likeCount: 0,
+  //     },
+  //     {
+  //       id: "comment-2",
+  //       username: "user2",
+  //       date: "2023-10-01T12:05:00Z",
+  //       content: "Second comment",
+  //       is_delete: true,
+  //       likeCount: 1,
+  //     },
+  //   ];
 
-  it('should map comments with replies correctly', async () => {
-    // Arrange
-    const comments = [
-      {
-        id: 'comment-123',
-        username: 'fulan',
-        date: '2022-12-30T07:26:17.000Z',
-        content: 'this is comment content',
-        is_delete: false,
-      },
-      {
-        id: 'comment-124',
-        username: 'fulan',
-        date: '2022-12-30T07:26:17.000Z',
-        content: 'this is deleted comment content',
-        is_delete: true,
-      },
-    ];
+  //   const replies = [
+  //     {
+  //       id: "reply-1",
+  //       comment_id: "comment-1",
+  //       content: "First reply",
+  //       is_delete: false,
+  //       date: "2023-10-01T12:01:00Z",
+  //       username: "user3",
+  //     },
+  //     {
+  //       id: "reply-2",
+  //       comment_id: "comment-1",
+  //       content: "Second reply",
+  //       is_delete: true,
+  //       date: "2023-10-01T12:02:00Z",
+  //       username: "user4",
+  //     },
+  //     {
+  //       id: "reply-3",
+  //       comment_id: "comment-2",
+  //       content: "Third reply",
+  //       is_delete: false,
+  //       date: "2023-10-01T12:06:00Z",
+  //       username: "user5",
+  //     },
+  //   ];
 
-    const replies = [
-      {
-        id: 'reply-123',
-        content: 'this is reply content',
-        date: '2022-12-30T07:26:17.000Z',
-        username: 'fulan',
-        comment_id: 'comment-123',
-        is_delete: false,
-      },
-    ];
+  //   const getThreadByIdUseCase = new GetThreadByIdUseCase({
+  //     threadRepository: {},
+  //     commentRepository: {},
+  //     replyRepository: {},
+  //     likeCommentRepository: {},
+  //   });
 
-    const expectedCommentsAndReplies = [
-      {
-        id: 'comment-123',
-        username: 'fulan',
-        date: '2022-12-30T07:26:17.000Z',
-        content: 'this is comment content',
-        replies: [
-          {
-            id: 'reply-123',
-            content: 'this is reply content',
-            date: '2022-12-30T07:26:17.000Z',
-            username: 'fulan',
-          },
-        ],
-      },
-      {
-        id: 'comment-124',
-        username: 'fulan',
-        date: '2022-12-30T07:26:17.000Z',
-        content: '**komentar telah dihapus**',
-        replies: [],
-      },
-    ];
+  //   // Act
+  //   const result = getThreadByIdUseCase._mapCommentsWithReplies(
+  //     comments,
+  //     replies
+  //   );
 
-    const getThreadByIdUseCase = new GetThreadByIdUseCase({
-      threadRepository: {},
-      commentRepository: {},
-      replyRepository: {},
-    });
-
-    // Act
-    const commentsWithReplies = getThreadByIdUseCase._mapCommentsWithReplies(
-      comments,
-      replies,
-    );
-
-    // Assert
-    expect(commentsWithReplies).toStrictEqual(expectedCommentsAndReplies);
-  });
-
-  it('should map comments with replies correctly when there are deleted replies or comments', async () => {
-    // Arrange
-    const comments = [
-      {
-        id: 'comment-1',
-        username: 'user1',
-        date: '2023-10-01T12:00:00Z',
-        content: 'First comment',
-        is_delete: false,
-      },
-      {
-        id: 'comment-2',
-        username: 'user2',
-        date: '2023-10-01T12:05:00Z',
-        content: 'Second comment',
-        is_delete: true,
-      },
-    ];
-
-    const replies = [
-      {
-        id: 'reply-1',
-        comment_id: 'comment-1',
-        content: 'First reply',
-        is_delete: false,
-        date: '2023-10-01T12:01:00Z',
-        username: 'user3',
-      },
-      {
-        id: 'reply-2',
-        comment_id: 'comment-1',
-        content: 'Second reply',
-        is_delete: true,
-        date: '2023-10-01T12:02:00Z',
-        username: 'user4',
-      },
-      {
-        id: 'reply-3',
-        comment_id: 'comment-2',
-        content: 'Third reply',
-        is_delete: false,
-        date: '2023-10-01T12:06:00Z',
-        username: 'user5',
-      },
-    ];
-
-    const getThreadByIdUseCase = new GetThreadByIdUseCase({
-      threadRepository: {},
-      commentRepository: {},
-      replyRepository: {},
-    });
-
-    // Act
-    const result = getThreadByIdUseCase._mapCommentsWithReplies(
-      comments,
-      replies,
-    );
-
-    // Assert
-    expect(result).toEqual([
-      {
-        id: 'comment-1',
-        username: 'user1',
-        date: '2023-10-01T12:00:00Z',
-        content: 'First comment',
-        replies: [
-          {
-            id: 'reply-1',
-            content: 'First reply',
-            date: '2023-10-01T12:01:00Z',
-            username: 'user3',
-          },
-          {
-            id: 'reply-2',
-            content: '**balasan telah dihapus**',
-            date: '2023-10-01T12:02:00Z',
-            username: 'user4',
-          },
-        ],
-      },
-      {
-        id: 'comment-2',
-        username: 'user2',
-        date: '2023-10-01T12:05:00Z',
-        content: '**komentar telah dihapus**',
-        replies: [
-          {
-            id: 'reply-3',
-            content: 'Third reply',
-            date: '2023-10-01T12:06:00Z',
-            username: 'user5',
-          },
-        ],
-      },
-    ]);
-  });
+  //   // Assert
+  //   expect(result).toEqual([
+  //     {
+  //       id: "comment-1",
+  //       username: "user1",
+  //       date: "2023-10-01T12:00:00Z",
+  //       content: "First comment",
+  //       likeCount: 0,
+  //       replies: [
+  //         {
+  //           id: "reply-1",
+  //           content: "First reply",
+  //           date: "2023-10-01T12:01:00Z",
+  //           username: "user3",
+  //         },
+  //         {
+  //           id: "reply-2",
+  //           content: "**balasan telah dihapus**",
+  //           date: "2023-10-01T12:02:00Z",
+  //           username: "user4",
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       id: "comment-2",
+  //       username: "user2",
+  //       date: "2023-10-01T12:05:00Z",
+  //       content: "**komentar telah dihapus**",
+  //       likeCount: 1,
+  //       replies: [
+  //         {
+  //           id: "reply-3",
+  //           content: "Third reply",
+  //           date: "2023-10-01T12:06:00Z",
+  //           username: "user5",
+  //         },
+  //       ],
+  //     },
+  //   ]);
+  // });
 
   it('should orchestrating the get thread by id action correctly', async () => {
     // Arrange
@@ -224,6 +158,7 @@ describe('a GetThreadByIdUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
     const mockReplyRepository = new ReplyRepository();
+    const mockLikeCommentRepository = new LikeCommentRepository();
 
     mockThreadRepository.isThreadExist = jest.fn(() => Promise.resolve());
     mockThreadRepository.getThreadById = jest.fn(() => Promise.resolve({
@@ -249,21 +184,33 @@ describe('a GetThreadByIdUseCase', () => {
         is_delete: true,
       },
     ]));
-    mockReplyRepository.getRepliesByThreadId = jest.fn(() => Promise.resolve([
-      {
-        id: 'reply-123',
-        content: 'this is reply content',
-        date: '2022-12-30T07:26:17.000Z',
-        username: 'fulan',
-        comment_id: 'comment-123',
-        is_delete: false,
-      },
-    ]));
+    mockReplyRepository.getRepliesByCommentId = jest.fn((commentId) => Promise.resolve(
+      commentId === 'comment-123'
+        ? [
+          {
+            id: 'reply-123',
+            content: 'this is reply content',
+            date: '2022-12-30T07:26:17.000Z',
+            username: 'fulan',
+            is_delete: false,
+          },
+          {
+            id: 'reply-124',
+            content: 'this is deleted reply content',
+            date: '2022-12-30T07:26:17.000Z',
+            username: 'fulan',
+            is_delete: true,
+          },
+        ]
+        : [],
+    ));
+    mockLikeCommentRepository.getLikeCountByCommentId = jest.fn((commentId) => Promise.resolve(commentId === 'comment-124' ? 0 : 1));
 
     const getThreadByIdUseCase = new GetThreadByIdUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
       replyRepository: mockReplyRepository,
+      likeCommentRepository: mockLikeCommentRepository,
     });
 
     // Action
@@ -278,10 +225,17 @@ describe('a GetThreadByIdUseCase', () => {
           username: 'fulan',
           date: '2022-12-30T07:26:17.000Z',
           content: 'this is comment content',
+          likeCount: 1,
           replies: [
             {
               id: 'reply-123',
               content: 'this is reply content',
+              date: '2022-12-30T07:26:17.000Z',
+              username: 'fulan',
+            },
+            {
+              id: 'reply-124',
+              content: '**balasan telah dihapus**',
               date: '2022-12-30T07:26:17.000Z',
               username: 'fulan',
             },
@@ -292,6 +246,7 @@ describe('a GetThreadByIdUseCase', () => {
           username: 'fulan',
           date: '2022-12-30T07:26:17.000Z',
           content: '**komentar telah dihapus**',
+          likeCount: 0,
           replies: [],
         },
       ],
@@ -305,8 +260,17 @@ describe('a GetThreadByIdUseCase', () => {
     expect(mockCommentRepository.getCommentsByThreadId).toBeCalledWith(
       useCasePayload.threadId,
     );
-    expect(mockReplyRepository.getRepliesByThreadId).toBeCalledWith(
-      useCasePayload.threadId,
+    expect(mockReplyRepository.getRepliesByCommentId).toBeCalledWith(
+      'comment-123',
     );
+    expect(mockLikeCommentRepository.getLikeCountByCommentId).toBeCalledWith(
+      'comment-123',
+    );
+    expect(mockLikeCommentRepository.getLikeCountByCommentId).toBeCalledWith(
+      'comment-124',
+    );
+    expect(
+      mockLikeCommentRepository.getLikeCountByCommentId,
+    ).toHaveBeenCalledTimes(2);
   });
 });
