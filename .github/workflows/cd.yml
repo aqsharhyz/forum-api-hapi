@@ -20,7 +20,8 @@ jobs:
           script: |
             cd ~/forum-api-hapi
             git pull origin master
-            nvm use 14.17.0
+            if [ -f ~/.nvm/nvm.sh ]; then . ~/.nvm/nvm.sh; fi
+            nvm use v14
             npm install
             npm run migrate up
             pm2 restart forum-api
