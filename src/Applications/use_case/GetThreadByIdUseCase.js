@@ -17,24 +17,40 @@ class GetThreadByIdUseCase {
     await this._threadRepository.isThreadExist(threadId);
     const thread = await this._threadRepository.getThreadById(threadId);
     const comments = await this._commentRepository.getCommentsByThreadId(
-      threadId
+      threadId,
     );
     const commentsWithLikesCount = await Promise.all(
       comments.map(async (comment) => {
-        const likeCount =
-          await this._likeCommentRepository.getLikeCountByCommentId(comment.id);
+        const likeCount = await this._likeCommentRepository.getLikeCountByCommentId(comment.id);
         return {
-          ...comment,
+          id: comment.id,
+          username: comment.username,
+          date: comment.date,
           likeCount,
+          content: comment.is_delete
+            ? '**komentar telah dihapus**'
+            : comment.content,
         };
-      })
+      }),
     );
 
-    const replies = await this._replyRepository.getRepliesByThreadId(threadId);
-
-    const commentsWithReplies = this._mapCommentsWithReplies(
-      commentsWithLikesCount,
-      replies
+    const commentsWithReplies = await Promise.all(
+      commentsWithLikesCount.map(async (comment) => {
+        const replies = await this._replyRepository.getRepliesByCommentId(
+          comment.id,
+        );
+        return {
+          ...comment,
+          replies: replies.map((reply) => ({
+            id: reply.id,
+            content: reply.is_delete
+              ? '**balasan telah dihapus**'
+              : reply.content,
+            date: reply.date,
+            username: reply.username,
+          })),
+        };
+      }),
     );
 
     const threadWithComments = {
@@ -47,36 +63,14 @@ class GetThreadByIdUseCase {
   _validatePayload(payload) {
     const { threadId } = payload;
     if (!threadId) {
-      throw new Error("GET_THREAD_BY_ID_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY");
+      throw new Error('GET_THREAD_BY_ID_USE_CASE.NOT_CONTAIN_NEEDED_PROPERTY');
     }
 
-    if (typeof threadId !== "string") {
+    if (typeof threadId !== 'string') {
       throw new Error(
-        "GET_THREAD_BY_ID_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION"
+        'GET_THREAD_BY_ID_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION',
       );
     }
-  }
-
-  _mapCommentsWithReplies(comments, replies) {
-    return comments.map((comment) => ({
-      id: comment.id,
-      username: comment.username,
-      date: comment.date,
-      content: comment.is_delete
-        ? "**komentar telah dihapus**"
-        : comment.content,
-      likeCount: comment.likeCount,
-      replies: [...replies]
-        .filter((reply) => reply.comment_id === comment.id)
-        .map((reply) => ({
-          id: reply.id,
-          content: reply.is_delete
-            ? "**balasan telah dihapus**"
-            : reply.content,
-          date: reply.date,
-          username: reply.username,
-        })),
-    }));
   }
 }
 

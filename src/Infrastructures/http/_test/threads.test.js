@@ -1,34 +1,34 @@
-const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
-const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
-const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
-const RepliesTableTestHelper = require("../../../../tests/RepliesTableTestHelper");
-const AuthenticationsTableTestHelper = require("../../../../tests/AuthenticationsTableTestHelper");
-const pool = require("../../database/postgres/pool");
-const container = require("../../container");
-const createServer = require("../createServer");
+const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
+const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper');
+const AuthenticationsTableTestHelper = require('../../../../tests/AuthenticationsTableTestHelper');
+const pool = require('../../database/postgres/pool');
+const container = require('../../container');
+const createServer = require('../createServer');
 
-describe("/threads endpoint", () => {
+describe('/threads endpoint', () => {
   let accessToken;
 
   beforeAll(async () => {
     const server = await createServer(container);
 
     await server.inject({
-      method: "POST",
-      url: "/users",
+      method: 'POST',
+      url: '/users',
       payload: {
-        username: "test",
-        password: "secret",
-        fullname: "test user",
+        username: 'test',
+        password: 'secret',
+        fullname: 'test user',
       },
     });
 
     const loginResponse = await server.inject({
-      method: "POST",
-      url: "/authentications",
+      method: 'POST',
+      url: '/authentications',
       payload: {
-        username: "test",
-        password: "secret",
+        username: 'test',
+        password: 'secret',
       },
     });
     const loginResponseJson = JSON.parse(loginResponse.payload);
@@ -45,19 +45,19 @@ describe("/threads endpoint", () => {
     await pool.end();
   });
 
-  describe("when POST /threads", () => {
-    it("should response 201 and persisted thread", async () => {
+  describe('when POST /threads', () => {
+    it('should response 201 and persisted thread', async () => {
       // Arrange
       const requestPayload = {
-        title: "test thread",
-        body: "this is body of thread",
+        title: 'test thread',
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
 
       // Action
       const response = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: requestPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -67,21 +67,21 @@ describe("/threads endpoint", () => {
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(201);
-      expect(responseJson.status).toEqual("success");
+      expect(responseJson.status).toEqual('success');
       expect(responseJson.data.addedThread).toBeDefined();
     });
 
-    it("should response 400 when request payload not contain needed property", async () => {
+    it('should response 400 when request payload not contain needed property', async () => {
       // Arrange
       const requestPayload = {
-        body: "this is body of thread",
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
 
       // Action
       const response = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: requestPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -91,47 +91,47 @@ describe("/threads endpoint", () => {
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(400);
-      expect(responseJson.status).toEqual("fail");
+      expect(responseJson.status).toEqual('fail');
       expect(responseJson.message).toEqual(
-        "tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada"
+        'tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada',
       );
     });
 
-    it("should response 401 when request not contain access token", async () => {
+    it('should response 401 when request not contain access token', async () => {
       // Arrange
       const requestPayload = {
-        title: "test thread",
-        body: "this is body of thread",
+        title: 'test thread',
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
 
       // Action
       const response = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: requestPayload,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(401);
-      expect(responseJson.error).toEqual("Unauthorized");
-      expect(responseJson.message).toEqual("Missing authentication");
+      expect(responseJson.error).toEqual('Unauthorized');
+      expect(responseJson.message).toEqual('Missing authentication');
     });
   });
 
-  describe("when GET /threads/{threadId}", () => {
-    it("should response 200 and return thread", async () => {
+  describe('when GET /threads/{threadId}', () => {
+    it('should response 200 and return thread', async () => {
       // Arrange
       const threadPayload = {
-        title: "test thread",
-        body: "this is body of thread",
-        owner: "user-123",
+        title: 'test thread',
+        body: 'this is body of thread',
+        owner: 'user-123',
       };
       const server = await createServer(container);
       const threadResponse = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: threadPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -141,34 +141,34 @@ describe("/threads endpoint", () => {
 
       // Action
       const response = await server.inject({
-        method: "GET",
+        method: 'GET',
         url: `/threads/${thread.data.addedThread.id}`,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.status).toEqual("success");
+      expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toEqual({
         id: thread.data.addedThread.id,
         title: threadPayload.title,
         body: threadPayload.body,
         date: expect.any(String),
-        username: "test",
+        username: 'test',
         comments: [],
       });
     });
 
-    it("should response 200 and return thread with comments", async () => {
+    it('should response 200 and return thread with comments', async () => {
       // Arrange
       const threadPayload = {
-        title: "test thread",
-        body: "this is body of thread",
+        title: 'test thread',
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
       const threadResponse = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: threadPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -177,10 +177,10 @@ describe("/threads endpoint", () => {
       const thread = JSON.parse(threadResponse.payload);
 
       const commentPayload = {
-        content: "test comment",
+        content: 'test comment',
       };
       await server.inject({
-        method: "POST",
+        method: 'POST',
         url: `/threads/${thread.data.addedThread.id}/comments`,
         payload: commentPayload,
         headers: {
@@ -190,25 +190,25 @@ describe("/threads endpoint", () => {
 
       // Action
       const response = await server.inject({
-        method: "GET",
+        method: 'GET',
         url: `/threads/${thread.data.addedThread.id}`,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.status).toEqual("success");
+      expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toEqual({
         id: thread.data.addedThread.id,
         title: threadPayload.title,
         body: threadPayload.body,
         date: expect.any(String),
-        username: "test",
+        username: 'test',
         comments: [
           {
             id: expect.any(String),
             content: commentPayload.content,
-            username: "test",
+            username: 'test',
             date: expect.any(String),
             likeCount: 0,
             replies: [],
@@ -217,16 +217,16 @@ describe("/threads endpoint", () => {
       });
     });
 
-    it("should response 200 and return thread with comments and replies", async () => {
+    it('should response 200 and return thread with comments and replies', async () => {
       // Arrange
       const threadPayload = {
-        title: "test thread",
-        body: "this is body of thread",
+        title: 'test thread',
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
       const threadResponse = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: threadPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -235,10 +235,10 @@ describe("/threads endpoint", () => {
       const thread = JSON.parse(threadResponse.payload);
 
       const commentPayload = {
-        content: "test comment",
+        content: 'test comment',
       };
       const commentResponse = await server.inject({
-        method: "POST",
+        method: 'POST',
         url: `/threads/${thread.data.addedThread.id}/comments`,
         payload: commentPayload,
         headers: {
@@ -248,10 +248,10 @@ describe("/threads endpoint", () => {
       const comment = JSON.parse(commentResponse.payload);
 
       const replyPayload = {
-        content: "test reply",
+        content: 'test reply',
       };
       await server.inject({
-        method: "POST",
+        method: 'POST',
         url: `/threads/${thread.data.addedThread.id}/comments/${comment.data.addedComment.id}/replies`,
         payload: replyPayload,
         headers: {
@@ -261,25 +261,25 @@ describe("/threads endpoint", () => {
 
       // Action
       const response = await server.inject({
-        method: "GET",
+        method: 'GET',
         url: `/threads/${thread.data.addedThread.id}`,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.status).toEqual("success");
+      expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toEqual({
         id: thread.data.addedThread.id,
         title: threadPayload.title,
         body: threadPayload.body,
         date: expect.any(String),
-        username: "test",
+        username: 'test',
         comments: [
           {
             id: comment.data.addedComment.id,
             content: commentPayload.content,
-            username: "test",
+            username: 'test',
             date: expect.any(String),
             likeCount: 0,
             replies: [
@@ -287,7 +287,7 @@ describe("/threads endpoint", () => {
                 id: expect.any(String),
                 date: expect.any(String),
                 content: replyPayload.content,
-                username: "test",
+                username: 'test',
               },
             ],
           },
@@ -295,16 +295,16 @@ describe("/threads endpoint", () => {
       });
     });
 
-    it("should response 200 and return thread with comments, replies, and comment likes", async () => {
+    it('should response 200 and return thread with comments, replies, and comment likes', async () => {
       // Arrange
       const threadPayload = {
-        title: "test thread",
-        body: "this is body of thread",
+        title: 'test thread',
+        body: 'this is body of thread',
       };
       const server = await createServer(container);
       const threadResponse = await server.inject({
-        method: "POST",
-        url: "/threads",
+        method: 'POST',
+        url: '/threads',
         payload: threadPayload,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -313,10 +313,10 @@ describe("/threads endpoint", () => {
       const thread = JSON.parse(threadResponse.payload);
 
       const commentPayload = {
-        content: "test comment",
+        content: 'test comment',
       };
       const commentResponse = await server.inject({
-        method: "POST",
+        method: 'POST',
         url: `/threads/${thread.data.addedThread.id}/comments`,
         payload: commentPayload,
         headers: {
@@ -326,7 +326,7 @@ describe("/threads endpoint", () => {
       const comment = JSON.parse(commentResponse.payload);
 
       await server.inject({
-        method: "PUT",
+        method: 'PUT',
         url: `/threads/${thread.data.addedThread.id}/comments/${comment.data.addedComment.id}/likes`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -335,25 +335,25 @@ describe("/threads endpoint", () => {
 
       // Action
       const response = await server.inject({
-        method: "GET",
+        method: 'GET',
         url: `/threads/${thread.data.addedThread.id}`,
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(200);
-      expect(responseJson.status).toEqual("success");
+      expect(responseJson.status).toEqual('success');
       expect(responseJson.data.thread).toEqual({
         id: thread.data.addedThread.id,
         title: threadPayload.title,
         body: threadPayload.body,
         date: expect.any(String),
-        username: "test",
+        username: 'test',
         comments: [
           {
             id: comment.data.addedComment.id,
             content: commentPayload.content,
-            username: "test",
+            username: 'test',
             date: expect.any(String),
             likeCount: 1,
             replies: [],
@@ -362,21 +362,21 @@ describe("/threads endpoint", () => {
       });
     });
 
-    it("should response 404 when thread not found", async () => {
+    it('should response 404 when thread not found', async () => {
       // Arrange
       const server = await createServer(container);
 
       // Action
       const response = await server.inject({
-        method: "GET",
-        url: "/threads/thread-123",
+        method: 'GET',
+        url: '/threads/thread-123',
       });
 
       // Assert
       const responseJson = JSON.parse(response.payload);
       expect(response.statusCode).toEqual(404);
-      expect(responseJson.status).toEqual("fail");
-      expect(responseJson.message).toEqual("thread tidak ditemukan");
+      expect(responseJson.status).toEqual('fail');
+      expect(responseJson.message).toEqual('thread tidak ditemukan');
     });
   });
 });

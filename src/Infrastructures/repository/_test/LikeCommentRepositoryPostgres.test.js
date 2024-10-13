@@ -1,25 +1,25 @@
-const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
-const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
-const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
-const LikeCommentTableTestHelper = require("../../../../tests/LikeCommentTableTestHelper");
-const pool = require("../../database/postgres/pool");
-const LikeCommentRepositoryPostgres = require("../LikeCommentRepositoryPostgres");
-const LikeCommentRepository = require("../../../Domains/like_comment/LikeCommentRepository");
+const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
+const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper');
+const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper');
+const LikeCommentTableTestHelper = require('../../../../tests/LikeCommentTableTestHelper');
+const pool = require('../../database/postgres/pool');
+const LikeCommentRepositoryPostgres = require('../LikeCommentRepositoryPostgres');
+const LikeCommentRepository = require('../../../Domains/like_comment/LikeCommentRepository');
 
-describe("a LikeCommentRepositoryPostgres", () => {
+describe('a LikeCommentRepositoryPostgres', () => {
   beforeAll(async () => {
     await UsersTableTestHelper.addUser({
-      id: "user-123",
-      username: "testuser",
+      id: 'user-123',
+      username: 'testuser',
     });
     await ThreadsTableTestHelper.addThread({
-      id: "thread-123",
-      owner: "user-123",
+      id: 'thread-123',
+      owner: 'user-123',
     });
     await CommentsTableTestHelper.addComment({
-      id: "comment-123",
-      owner: "user-123",
-      threadId: "thread-123",
+      id: 'comment-123',
+      owner: 'user-123',
+      threadId: 'thread-123',
     });
   });
 
@@ -34,50 +34,50 @@ describe("a LikeCommentRepositoryPostgres", () => {
     await pool.end();
   });
 
-  it("should be instance of LikeCommentRepository domain", () => {
+  it('should be instance of LikeCommentRepository domain', () => {
     const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
       {},
-      {}
+      {},
     );
 
     expect(likeCommentRepositoryPostgres).toBeInstanceOf(LikeCommentRepository);
   });
 
-  describe("checkLikeComment function", () => {
-    it("should return false if like comment not found in database", async () => {
+  describe('checkLikeComment function', () => {
+    it('should return false if like comment not found in database', async () => {
       // Arrange
       const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
         pool,
-        {}
+        {},
       );
 
       // Action
       const likeComment = await likeCommentRepositoryPostgres.checkLikeComment(
-        "comment-123",
-        "user-123"
+        'comment-123',
+        'user-123',
       );
 
       // Assert
       expect(likeComment).toBeFalsy();
     });
 
-    it("should return true if like comment found in database", async () => {
+    it('should return true if like comment found in database', async () => {
       // Arrange
       await LikeCommentTableTestHelper.addLikeComment({
-        id: "like-comment-123",
-        commentId: "comment-123",
-        owner: "user-123",
+        id: 'like-comment-123',
+        commentId: 'comment-123',
+        owner: 'user-123',
       });
 
       const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
         pool,
-        {}
+        {},
       );
 
       // Action
       const likeComment = await likeCommentRepositoryPostgres.checkLikeComment(
-        "comment-123",
-        "user-123"
+        'comment-123',
+        'user-123',
       );
 
       // Assert
@@ -85,94 +85,93 @@ describe("a LikeCommentRepositoryPostgres", () => {
     });
   });
 
-  describe("likeComment function", () => {
-    it("should persist new like comment in database", async () => {
+  describe('likeComment function', () => {
+    it('should persist new like comment in database', async () => {
       // Arrange
       const payload = {
-        commentId: "comment-123",
-        owner: "user-123",
+        commentId: 'comment-123',
+        owner: 'user-123',
       };
-      const fakeIdGenerator = () => "123";
+      const fakeIdGenerator = () => '123';
       const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
         pool,
-        fakeIdGenerator
+        fakeIdGenerator,
       );
 
       // Action
       await likeCommentRepositoryPostgres.likeComment(
         payload.commentId,
-        payload.owner
+        payload.owner,
       );
       const likeComments = await LikeCommentTableTestHelper.getLikeCommentById(
-        "like-comment-123"
+        'like-comment-123',
       );
 
       // Assert
       expect(likeComments).toHaveLength(1);
       expect(likeComments).toStrictEqual([
         {
-          id: "like-comment-123",
-          comment_id: "comment-123",
-          owner: "user-123",
+          id: 'like-comment-123',
+          comment_id: 'comment-123',
+          owner: 'user-123',
         },
       ]);
     });
   });
 
-  describe("unlikeComment function", () => {
-    it("should delete like comment from database", async () => {
+  describe('unlikeComment function', () => {
+    it('should delete like comment from database', async () => {
       // Arrange
       await LikeCommentTableTestHelper.addLikeComment({
-        id: "like-123",
-        commentId: "comment-123",
-        owner: "user-123",
+        id: 'like-123',
+        commentId: 'comment-123',
+        owner: 'user-123',
       });
       const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
         pool,
-        {}
+        {},
       );
 
       // Action
       await likeCommentRepositoryPostgres.unlikeComment(
-        "comment-123",
-        "user-123"
+        'comment-123',
+        'user-123',
       );
 
       // Assert
       const likeComments = await LikeCommentTableTestHelper.getLikeCommentById(
-        "like-123"
+        'like-123',
       );
       expect(likeComments).toHaveLength(0);
     });
   });
 
-  describe("getLikeCountByCommentId function", () => {
-    it("should return like count from database", async () => {
+  describe('getLikeCountByCommentId function', () => {
+    it('should return like count from database', async () => {
       // Arrange
       await LikeCommentTableTestHelper.addLikeComment({
-        id: "like-123",
-        commentId: "comment-123",
-        owner: "user-123",
+        id: 'like-123',
+        commentId: 'comment-123',
+        owner: 'user-123',
       });
       await UsersTableTestHelper.addUser({
-        id: "user-124",
-        username: "test2",
+        id: 'user-124',
+        username: 'test2',
       });
       await LikeCommentTableTestHelper.addLikeComment({
-        id: "like-124",
-        commentId: "comment-123",
-        owner: "user-124",
+        id: 'like-124',
+        commentId: 'comment-123',
+        owner: 'user-124',
       });
       const likeCommentRepositoryPostgres = new LikeCommentRepositoryPostgres(
         pool,
-        {}
+        {},
       );
 
       // Action
-      const likeCount =
-        await likeCommentRepositoryPostgres.getLikeCountByCommentId(
-          "comment-123"
-        );
+      const likeCount = await likeCommentRepositoryPostgres.getLikeCountByCommentId(
+        'comment-123',
+      );
 
       // Assert
       expect(likeCount).toEqual(2);

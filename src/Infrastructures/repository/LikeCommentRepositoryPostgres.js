@@ -1,4 +1,4 @@
-const LikeCommentRepository = require("../../Domains/like_comment/LikeCommentRepository");
+const LikeCommentRepository = require('../../Domains/like_comment/LikeCommentRepository');
 
 class LikeCommentRepositoryPostgres extends LikeCommentRepository {
   constructor(pool, idGenerator) {
@@ -13,7 +13,7 @@ class LikeCommentRepositoryPostgres extends LikeCommentRepository {
 
   async checkLikeComment(commentId, owner) {
     const query = {
-      text: "SELECT * FROM comments_likes WHERE comment_id = $1 AND owner = $2",
+      text: 'SELECT * FROM comments_likes WHERE comment_id = $1 AND owner = $2',
       values: [commentId, owner],
     };
 
@@ -26,7 +26,7 @@ class LikeCommentRepositoryPostgres extends LikeCommentRepository {
     const id = `like-comment-${this._idGenerator()}`;
 
     const query = {
-      text: "INSERT INTO comments_likes VALUES($1, $2, $3)",
+      text: 'INSERT INTO comments_likes VALUES($1, $2, $3)',
       values: [id, commentId, owner],
     };
 
@@ -35,7 +35,7 @@ class LikeCommentRepositoryPostgres extends LikeCommentRepository {
 
   async unlikeComment(commentId, owner) {
     const query = {
-      text: "DELETE FROM comments_likes WHERE comment_id = $1 AND owner = $2",
+      text: 'DELETE FROM comments_likes WHERE comment_id = $1 AND owner = $2',
       values: [commentId, owner],
     };
 
@@ -44,7 +44,7 @@ class LikeCommentRepositoryPostgres extends LikeCommentRepository {
 
   async getLikeCountByCommentId(commentId) {
     const query = {
-      text: "SELECT COUNT(*) FROM comments_likes WHERE comment_id = $1",
+      text: 'SELECT COUNT(*) FROM comments_likes WHERE comment_id = $1',
       values: [commentId],
     };
 
