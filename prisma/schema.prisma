@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  username  String   @unique
+  password  String
+  fullname  String
+
+  threads   Thread[]
+  comments  Comment[]
+  replies   Reply[]
+  threadLikes ThreadLike[]
+  commentLikes CommentLike[]
+
+  @@map("users")
+}
+
+model Authentication {
+  token String @unique
+
+  @@map("authentications")
+}
+
+model Thread {
+  id        String   @id
+  title     String
+  body      String
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  is_deleted Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  comments  Comment[]
+  likes     ThreadLike[]
+
+  @@map("threads")
+}
+
+model Comment {
+  id        String   @id
+  content      String
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  thread    Thread   @relation(fields: [threadId], references: [id])
+  threadId  String
+  is_deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  replies   Reply[]
+  likes     CommentLike[]
+
+  @@map("comments")
+}
+
+model Reply {
+  id        String   @id
+  content      String
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  comment    Comment   @relation(fields: [commentId], references: [id])
+  commentId  String
+  // threadId?
+  is_deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@map("replies")
+}
+
+model ThreadLike {
+  id        String   @id
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  thread    Thread   @relation(fields: [threadId], references: [id])
+  threadId  String
+
+  @@map("thread_likes")
+}
+
+model CommentLike {
+  id        String   @id
+  owner    User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  comment    Comment   @relation(fields: [commentId], references: [id])
+  commentId  String
+
+  @@map("comment_likes")
+}
